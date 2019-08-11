@@ -1,7 +1,32 @@
 const router = require('express').Router();
+const User = require('../Module/UserModule');
 
-router.post( '/register', ( req, res )=>{
-    res.send( "Register" );
+//validations
+const Joi = require('@hapi/joi');
+const schema= {
+    name: Joi.string().min(6).required(),
+    email: Joi.string().min(6).required(),
+    password: Joi.string().min(6).required()
+}
+
+router.post( '/register', async( req,res )=>{
+
+    const { error }=Joi.validate(req.body, schema);
+    res.send(error)
+    if(error){
+        return res.status(400).send(error);
+    }
+    const user = new User({
+        name : req.body.name,
+        email : req.body.email,
+        password : req.body.password
+    });
+    try{
+        const savedUser = await user.save();
+        res.send(savedUser);
+    }catch(err){
+        res.status(400).send(err);
+    }
 });
 
 
